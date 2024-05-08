@@ -1,0 +1,8 @@
+autogluon
+gradio
+numpy
+matplotlib
+scipy
+pandas
+pyarrow
+seaborn
