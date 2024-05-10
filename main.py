@@ -6,15 +6,13 @@ from saver import dATA
 with gr.Blocks() as interface:
     with gr.Tab("Data Upload and Preporation"):  # with three main tabs module at first
 
-        with gr.Row():
-            # first is an info textbox    
+        with gr.Row():  # first is an info textbox    
             output_data = gr.Textbox(label="Data infos",lines=10)
 
             # prepare a closure for btn
             enable = creat_btn("Confirm")
 
-            with gr.Column(min_width=1):
-                # Using a dropdown to choose a datafile
+            with gr.Column(min_width=1):  # Using a dropdown to choose a datafile
                 data_chose = gr.Dropdown(label="Choose a DataFile", choices=get_file_list())
 
                 # Using a button to upload a datafile, invisible
@@ -35,8 +33,7 @@ with gr.Blocks() as interface:
             # warning here for wrong btn click order
             drop_btn.click(fn=drop_missings, inputs=slide, outputs=[output_data, output_string])
 
-            with gr.Column():
-                # Using a textbox to choose string columns
+            with gr.Column():  # Using a textbox to choose string columns
                 data_choser = gr.Textbox(label="Choose some string columns")
 
                 # Using checkboxs to Numeralization or del string columns
@@ -47,21 +44,22 @@ with gr.Blocks() as interface:
                 with gr.Accordion("Examples", open=False):
                     gr.Examples(inputs=[data_choser, is_log10, is_del], 
                                 examples=[
-                        ['Zip,Home type,Id,High School,Summary,Elementary School,Lot size,High School Score,Elementary School Distance,Total spaces,Garage spaces,Heating features,Bedrooms,Bathrooms,Parcel number,Heating,Parking features',False, True],
-                        ['Sold Price,Year built,Total interior livable area,Lot size,Tax assessed value,Annual tax amount', True, False],
+                        ['Id,Address,Summary,Heating,Cooling,Parking,Total spaces,Home type,Elementary School,High School,Heating features,Parking features,Parcel number,Zip',False, True],
+                        ['Sold Price,Year built,Total interior livable area,Lot size,Tax assessed value,Annual tax amount,Listed Price', True, False],
                         ['Bedrooms, Bathrooms,Total spaces,Garage spaces,Elementary School Score,Elementary School Distance,High School Score,High School Distance', False, False]])
 
         with gr.Row():
-            with gr.Column(scale=1, min_width=1):  # Frame the data range for certain columns
-                slider_min = gr.Slider(label="Min")
-                slider_max = gr.Slider(label="Max")
+            with gr.Accordion(open=False, label='Change range'):
+                with gr.Column(scale=1, min_width=1):  # Frame the data range for certain columns
+                    slider_min = gr.Slider(label="Min")
+                    slider_max = gr.Slider(label="Max")
 
-                # a listener to update checkgroups as number columns
-                select_group = gr.CheckboxGroup(label="Choose columns",choices=[None])
-                output_string.change(fn=enable_check, inputs=select_group, outputs=select_group)
-                
-                change_btn = gr.Button(variant='primary', value="Change!")
-                change_btn.click(inputs=[slider_min, slider_max, select_group], fn=change_range, outputs=output_data)
+                    # a listener to update checkgroups as number columns
+                    select_group = gr.CheckboxGroup(label="Choose columns",choices=[None])
+                    output_string.change(fn=enable_check, inputs=select_group, outputs=select_group)
+                    
+                    change_btn = gr.Button(variant='primary', value="Change!")
+                    change_btn.click(inputs=[slider_min, slider_max, select_group], fn=change_range, outputs=output_data)
             
             # 缺失值填充和标准化
             normal_btn.click(fn=clear2full, outputs=[output_data, output_string])
@@ -87,7 +85,7 @@ with gr.Blocks() as interface:
                 # drawer btns
                 scatters_btn = gr.Button(variant='primary', value="Make scatter!")
                 hist_btn = gr.Button(variant='primary', value="Make hist!")
-                normalize_button = gr.Button(variant='primary', value="Z-score!")
+                normalize_button = gr.Button(variant='primary', value="Normalize!")
                 button = gr.Button(variant='primary', value="Correlation matrix!")
                 box_btn = gr.Button(variant='primary', value="Boxplot!")
 
@@ -106,12 +104,12 @@ with gr.Blocks() as interface:
             hot = gr.Plot()
             button.click(fn=plot_corr, outputs=hot)
 
-        # normalize/zscore按钮触发器
-        normalize_button.click(fn=plot_zscore, inputs=map_choose, outputs=scatter)
+        # normalize按钮触发器
+        normalize_button.click(fn=normalize, inputs=map_choose, outputs=scatter)
 
     with gr.Tab("Model Training and analysis"):
         with gr.Row():  # print LOSS and chose model at first
-            rmsle = gr.Number(label="RMSLE", interactive=False)
+            rmse = gr.Number(label="RMSLE", interactive=False)
             pre = gr.Radio(choices=['SalePrice', 'Sold Price'], label='the target')
             model_path = gr.Dropdown(label="Choose a model", choices=get_model_list())
 
@@ -160,10 +158,10 @@ with gr.Blocks() as interface:
             importance = gr.Dataframe(label='Feature importance')
 
         # start trainning
-        start_btn.click(fn=train_model, inputs=pre, outputs=[rmsle, performance, perform_fig, perform_info, importance])
-        start_btn2.click(fn=load_model, inputs=[pre, model_path], outputs=[rmsle, performance, perform_fig, perform_info, importance])
+        start_btn.click(fn=train_model, inputs=pre, outputs=[rmse, performance, perform_fig, perform_info, importance])
+        start_btn2.click(fn=load_model, inputs=[pre, model_path], outputs=[rmse, performance, perform_fig, perform_info, importance])
         
-        btn_start.click(fn=train_new, inputs=pre, outputs=[rmsle, performance, perform_fig, perform_info, importance])
-        btn_start2.click(fn=load_new, inputs=[pre, model_path], outputs=[rmsle, performance, perform_fig, perform_info, importance])
+        btn_start.click(fn=train_new, inputs=pre, outputs=[rmse, performance, perform_fig, perform_info, importance])
+        btn_start2.click(fn=load_new, inputs=[pre, model_path], outputs=[rmse, performance, perform_fig, perform_info, importance])
 
 interface.launch()

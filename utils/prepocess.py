@@ -1,4 +1,5 @@
 from saver import dATA
+from sklearn.preprocessing import StandardScaler
 import numpy as np
 import pandas as pd
 
@@ -78,16 +79,19 @@ def clear2full():
         dATA.data[i] = dATA.data[i].fillna(dATA.data[i].mean())
 
     # 非数值型数据
-    miss_str = dATA.data[missings].select_dtypes('number').columns
+    miss_str = dATA.data[missings].select_dtypes('object').columns
     for i in miss_str:
         freq = dATA.data[i].mode().iloc[0]
         dATA.data[i] = dATA.data[i].fillna(freq)
 
     return dATA.info, dATA.find_string
 
-def calz(features):
+def cal_normal(features):
     X_train = dATA.data[features].values
-    mu = np.mean(X_train, axis=0)
-    sigma = np.std(X_train, axis=0)
-    X_norm = (X_train - mu) / sigma
+    # 标准化器
+    scaler = StandardScaler()
+    X_norm = scaler.fit_transform(X_train)
+    for i, feature in enumerate(features):
+        dATA.data[feature] = X_norm[:, i]
+    
     return X_train, X_norm

@@ -28,8 +28,9 @@ def split_data(*args):
 def train_model(target):
     dATA.predictor = TabularPredictor(label=target).fit(dATA.train)
     preds = dATA.predictor.predict(dATA.test.drop(columns=target))
+    print(dATA.predictor.feature_importance(dATA.test))
     return (
-        rmsle(preds, dATA.test[target]), 
+        rmse(preds, dATA.test[target]), 
         dict_to_long_string(dATA.predictor.evaluate(dATA.test)),
         show_results(dATA.test[target], preds),
         dATA.predictor.leaderboard(dATA.test),
@@ -40,8 +41,9 @@ def load_model(target, path):
     try:
         dATA.predictor = TabularPredictor.load(path)
         preds = dATA.predictor.predict(dATA.test.drop(columns=[target]))
+        print(dATA.predictor.feature_importance(dATA.test))
         return (
-            rmsle(preds, dATA.test[target]),
+            rmse(preds, dATA.test[target]),
             dict_to_long_string(dATA.predictor.evaluate(dATA.test)), 
             show_results(dATA.test[target], preds),
             dATA.predictor.leaderboard(dATA.test),
@@ -54,6 +56,7 @@ def train_new(target):
     dATA.predictor = TabularPredictor(label=target).fit(dATA.train)
     t = dATA.test.drop(columns=[target])
     preds = dATA.predictor.predict(t)
+    print(dATA.predictor.feature_importance(dATA.test))
     return (
         np.nan, 
         'No Infomation For New Test Data', 
@@ -67,6 +70,7 @@ def load_new(target, path):
         dATA.predictor = TabularPredictor.load(path)
         t = dATA.test.drop(columns=[target])
         preds = dATA.predictor.predict(t)
+        print(dATA.predictor.feature_importance(dATA.test))
         return (
             np.nan,
             'No Infomation For New Test Data', 
@@ -77,7 +81,7 @@ def load_new(target, path):
     except Exception as e:
         print(e)
 
-def rmsle(y_hat, y):
+def rmse(y_hat, y):
     # we already used log prices before, so we only need to compute RMSE
     return sum((y_hat - y)**2 / len(y))**0.5
 

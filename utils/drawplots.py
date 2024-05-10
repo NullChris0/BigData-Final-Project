@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import random
 from saver import dATA
-from utils.prepocess import calz
+from utils.prepocess import cal_normal
 
 
 def plot_scatter(pos):
@@ -35,24 +35,22 @@ def plot_hist(pos):
     plt.savefig('./results/hist.png')
     return plt
 
-def plot_boxplots(pos):
+def plot_boxplots(labels):
     plt.clf()
-    data_lists = [dATA.data[col] for col in pos]  # 提取
-    labels = ['A', 'B', 'C', 'D']  # 标识数据集的标签
+    data_lists = [dATA.data[col] for col in labels]  # 提取
     fig, axes = plt.subplots(nrows=2, ncols=2, figsize=(12, 8))
 
     for idx, (data, label) in enumerate(zip(data_lists, labels)):
         row = idx // 2  # 行索引
         col = idx % 2   # 列索引
-        axes[row, col].boxplot(data)  # 在对应的子图上绘制箱线图
-        axes[row, col].set_title(f'箱线图：{label}')  # 为子图设置描述性标题
-        axes[row, col].set_ylabel('值')  # 设置y轴标签
+        axes[row, col].boxplot(data)
+        axes[row, col].set_title(f'{label}')  # 为子图标题
 
-    # 隐藏所有子图的x轴刻度（箱线图通常不需要显示x轴刻度）
+    # 隐藏所有x轴刻度
     for ax in axes.flat:
-        ax.set_xticks([])  # 设置空的x轴刻度列表
+        ax.set_xticks([])
 
-    plt.tight_layout()  # 启动间距
+    plt.tight_layout()
     plt.savefig('./results/boxplot.png')
     return plt
 
@@ -61,16 +59,14 @@ def plot_corr():
     plt.clf()
     cols = dATA.data.select_dtypes(include=['number']).columns.tolist()
     cols = random.sample(cols, 5)
-    ax = sns.heatmap(dATA.data[cols].corr(), annot=True, cmap='coolwarm')
+    ax = sns.heatmap(dATA.data[cols].corr(), annot=True, cmap='rainbow')
     bottom, top = ax.get_ylim()
     ax.set_ylim(bottom + 0.5, top - 0.5)
     plt.savefig('./results/corr.png')
     return plt
 
-
-def plot_zscore(feature_names):
-    X_train, X_norm = calz(feature_names)
-    
+def normalize(feature_names):
+    X_train , X_norm = cal_normal(feature_names)
     fig, ax = plt.subplots(1, 2, figsize=(12, 6))
     
     # 原始数据图
@@ -80,14 +76,14 @@ def plot_zscore(feature_names):
     ax[0].set_title("Unnormalized")
     ax[0].axis('equal')
     
-    # Z-score标准化后的数据图
+    # 标准化后的数据图
     ax[1].scatter(X_norm[:,0], X_norm[:,1])
     ax[1].set_xlabel(feature_names[0])
     ax[1].set_ylabel(feature_names[1])
-    ax[1].set_title("Z-score Normalized")
+    ax[1].set_title("Normalized")
     ax[1].axis('equal')
     
-    fig.suptitle("Distribution of Features Before, During, and After Normalization")
+    fig.suptitle("Distribution of Features Before and After Normalization")
     plt.tight_layout()
-    plt.savefig('./results/zscore.png')
+    plt.savefig('./results/Normalize.png')
     return plt
